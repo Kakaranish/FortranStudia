@@ -1,0 +1,5 @@
+PROGRAM {program_name}
+    IMPLICIT NONE
+    
+STOP
+END PROGRAM {program_name}

@@ -5,7 +5,12 @@ param(
     [Parameter(Mandatory = $true)][int] $EndIndex
 )
 
+$template_name = "prog.template"
+
 for ($i = $StartIndex; $i -le $EndIndex; $i++) {
     $file_path = Join-Path -Path (Resolve-Path $Directory) "prog_$i.f95"
-    New-Item -Path $file_path -ItemType File
+    (Get-Content "$PSScriptRoot\$template_name" ) | ForEach-Object {
+        $_ -replace "{program_name}", "p$i"
+    } | `
+    Set-Content -Path $file_path
 }
