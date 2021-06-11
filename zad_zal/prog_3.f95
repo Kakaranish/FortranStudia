@@ -1,6 +1,8 @@
 PROGRAM p3
     IMPLICIT NONE
-    INTEGER :: n1, n2, sum = 0
+    INTEGER, PARAMETER :: idp = selected_int_kind(15)
+
+    INTEGER(kind = idp) :: n1, n2, sum = 0
 
     PRINT *, "This program sums all natural numbers between n1 and n2"
 
@@ -15,15 +17,13 @@ PROGRAM p3
     END IF
 
     sum = SumInterval(n1, n2)
+    WRITE (UNIT=*, FMT="(I20)") sum
 
-    PRINT *, sum
-
-    
     CONTAINS
     SUBROUTINE swap(a,b)
         IMPLICIT NONE
-        INTEGER, INTENT(OUT) :: a,b
-        INTEGER :: temp
+        INTEGER(kind = idp), INTENT(OUT) :: a,b
+        INTEGER(kind = idp) :: temp
 
         temp = a
         a = b
@@ -31,8 +31,8 @@ PROGRAM p3
     END SUBROUTINE swap
 
     RECURSIVE FUNCTION SumInterval(start, end) RESULT(sum)
-        INTEGER, INTENT (IN) :: start, end
-        INTEGER :: sum
+        INTEGER(kind = idp), INTENT (IN) :: start, end
+        INTEGER(kind = idp) :: sum
 
         IF(start.NE.end) THEN
             sum = start + SumInterval(start + 1, end)
