@@ -200,10 +200,11 @@ PROGRAM p1
         END IF
     END DO
 
+    PRINT *, "Type digits to get t9 predictive text"
 
     DO while(.true.)
+        PRINT *, "Provide digits: "
         READ(*,'(A)') prompt_str
-        
         PRINT *, "Prompts: "
         CALL ShowWordsStartingWith(dict_root, prompt_str)
     END DO
