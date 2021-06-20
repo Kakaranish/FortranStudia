@@ -17,6 +17,7 @@ MODULE WordList
     SUBROUTINE PrintWordList(head)
         type(WordListItem), pointer :: head
         type(WordListItem), pointer :: ptr
+        INTEGER :: i
     
         if(.not. associated(head)) then
             print *, "NO WORDS FOUND"
@@ -25,9 +26,11 @@ MODULE WordList
 
         ptr => head%next
     
+        i = 1
         DO WHILE ( associated(ptr) )
-          print *, ptr%word
+          print *, i, ") ", ptr%word
           ptr => ptr%next
+          i = i + 1
         END DO
         PRINT *
     END SUBROUTINE PrintWordList
@@ -57,75 +60,43 @@ END MODULE WordList
 MODULE DictionaryModule
     USE CommonModule
     USE WordList
+
+    INTEGER, PARAMETER :: DIGITS_COUNT = 8, START_DIGIT = 2, END_DIGIT = 9
     
     TYPE DictNode
         TYPE(DictNode), POINTER, DIMENSION(:) :: next => NULL()
         TYPE(WordListItem), POINTER :: word_list_root => NULL()
     END TYPE DictNode
-END MODULE DictionaryModule
-
-PROGRAM p1
-    USE CommonModule
-    USE DictionaryModule
-    USE WordList
-
-    IMPLICIT NONE
-    
-    INTEGER, PARAMETER :: DICT_SIZE = 10000 
-    INTEGER, PARAMETER :: MAX_WORD_LEN = 20
-    INTEGER, PARAMETER :: DIGITS_COUNT = 8, START_DIGIT = 2, END_DIGIT = 9
-
-    INTEGER :: i, eof
-    CHARACTER(LEN=20) :: current_val2
-        
-    TYPE(Word), DIMENSION(:), POINTER :: words_arr
-    TYPE(Word), Dimension(DICT_SIZE) :: WordDict
-
-    TYPE(WordListItem), POINTER :: list_head
-    TYPE(WordListItem), POINTER :: temp_item
-
-    TYPE(DictNode), POINTER :: dict_root
-    allocate(dict_root)
-    call InsertWordToDict(dict_root, "aeae")
-    call InsertWordToDict(dict_root, "bebe")
-    call PrintWordList(dict_root%next(2)%next(3)%next(2)%next(3)%word_list_root)
-
-
-    allocate(list_head)
-
-    ! call InsertWordList(list_head, Word("XD2"))
-    ! call InsertWordList(list_head, Word("XD3"))
-    ! call InsertWordList(list_head, Word("XD3"))
-    ! call InsertWordList(list_head, Word("XD3"))
-    ! call InsertWordList(list_head, Word("XD3"))
-    ! call InsertWordList(list_head, Word("XD3"))
-    ! call InsertWordList(list_head, Word("XD3"))
-    ! call PrintWordList(list_head)
-
-
-    ! Load dictionary
-
-    OPEN (UNIT = 1, FILE = "dict.txt", STATUS = "OLD", ACTION = "READ", POSITION="REWIND")
-    DO i=1, DICT_SIZE
-        READ (UNIT=1, FMT=*, IOSTAT=eof) current_val2
-        current_val2 = trim(current_val2)
-    
-        ! PRINT *, WordToDigits(current_val2)
-        ! READ(*,*)
-        
-        ! WordDict(i) = String
-        ! WordDict(i) = String(current_val)
-        IF (eof < 0) THEN
-            EXIT
-        END IF
-    END DO
-
-    ! InsertWordToDict()
 
     CONTAINS
 
+    SUBROUTINE ShowWordsStartingWith(rootNode, digits_str)
+        TYPE(DictNode), POINTER, INTENT(IN) :: rootNode
+        CHARACTER(LEN=*), INTENT(IN) :: digits_str
+        TYPE(DictNode), POINTER :: nodeIterator
+        INTEGER :: digit, digits_count, i
+
+        if (.not. associated(rootNode)) then
+            print *, "NO WORDS FOUND"
+            RETURN
+        end if
+
+        nodeIterator = rootNode
+        digits_count = len_trim(digits_str)
+        do i=1, digits_count
+            read (digits_str(i:i), *) digit
+            nodeIterator = nodeIterator%next(digit)
+            
+            if (.not. associated(nodeIterator)) then
+                print *, "NO WORDS FOUND"
+                RETURN
+            end if
+        end do
+
+        call PrintWordList(nodeIterator%word_list_root)
+    END SUBROUTINE ShowWordsStartingWith
+
     SUBROUTINE InsertWordToDict(rootNode, word_str)
-        IMPLICIT NONE
         TYPE(DictNode), POINTER :: rootNode
         CHARACTER(LEN=*) :: word_str
         TYPE(Word) :: new_word
@@ -137,7 +108,6 @@ PROGRAM p1
         out_digits_size = size(out_digits)
                 
         iteratorNode => rootNode
-        
         do i=1, out_digits_size    
             current_digit = out_digits(i)
             ! print *, current_digit ! DEBUG
@@ -203,6 +173,40 @@ PROGRAM p1
 
         RETURN
     END FUNCTION CharToDigit
+END MODULE DictionaryModule
 
-    ! STOP
+PROGRAM p1
+    USE CommonModule
+    USE DictionaryModule
+    USE WordList
+
+    IMPLICIT NONE
+    
+    INTEGER, PARAMETER :: DICT_SIZE = 10000 
+    INTEGER :: i, eof
+    CHARACTER(LEN=20) :: current_word_str, prompt_str
+    TYPE(DictNode), POINTER :: dict_root
+
+    allocate(dict_root)
+
+    OPEN (UNIT = 1, FILE = "dict.txt", STATUS = "OLD", ACTION = "READ", POSITION="REWIND")
+    DO i=1, DICT_SIZE
+        READ (UNIT=1, FMT=*, IOSTAT=eof) current_word_str
+        
+        call InsertWordToDict(dict_root, trim(current_word_str))
+
+        IF (eof < 0) THEN
+            EXIT
+        END IF
+    END DO
+
+
+    do while(.true.)
+        read(*,'(A)') prompt_str
+        
+        print *, "Prompts: "
+        call ShowWordsStartingWith(dict_root, prompt_str)
+    end do
+
+    STOP
 END PROGRAM p1
