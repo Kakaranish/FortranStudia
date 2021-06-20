@@ -233,7 +233,7 @@ PROGRAM p1
         END IF
     END DO
 
-    PRINT *, "Type digits to get t9 predictive text"
+    PRINT *, "Type digits to get t9 predictive text, for example: '843'"
 
     DO while(.true.)
         PRINT *, "Provide digits: "
