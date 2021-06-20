@@ -15,20 +15,20 @@ MODULE WordList
     CONTAINS 
 
     SUBROUTINE PrintWordList(head)
-        type(WordListItem), pointer :: head
-        type(WordListItem), pointer :: ptr
+        TYPE(WordListItem), POINTER :: head
+        TYPE(WordListItem), POINTER :: ptr
         INTEGER :: i
     
-        if(.not. associated(head)) then
-            print *, "NO WORDS FOUND"
-            return
-        end if
+        IF(.NOT. ASSOCIATED(head)) THEN
+            PRINT *, "NO WORDS FOUND"
+            RETURN
+        END IF
 
         ptr => head%next
     
         i = 1
-        DO WHILE ( associated(ptr) )
-          print *, i, ") ", ptr%word
+        DO WHILE ( ASSOCIATED(ptr) )
+          PRINT *, i, ") ", ptr%word
           ptr => ptr%next
           i = i + 1
         END DO
@@ -36,21 +36,21 @@ MODULE WordList
     END SUBROUTINE PrintWordList
 
     SUBROUTINE InsertWordList(head, new_word)
-        type(WordListItem), pointer :: head, ptr, temp
-        type(Word) :: new_word
+        TYPE(WordListItem), POINTER :: head, ptr, temp
+        TYPE(Word) :: new_word
 
-        if(.not. associated(head)) then
-            allocate(head)
+        IF(.NOT. ASSOCIATED(head)) THEN
+            ALLOCATE(head)
             head%word = new_word
-            return
-        end if
+            RETURN
+        END IF
         
         ptr => head
-        DO WHILE ( associated(ptr%next) )
+        DO WHILE (ASSOCIATED(ptr%next))
             ptr => ptr%next
         END DO
         
-        allocate(temp)
+        ALLOCATE(temp)
         temp%word = new_word
 
         ptr%next => temp
@@ -76,24 +76,24 @@ MODULE DictionaryModule
         TYPE(DictNode), POINTER :: nodeIterator
         INTEGER :: digit, digits_count, i
 
-        if (.not. associated(rootNode)) then
-            print *, "NO WORDS FOUND"
+        IF (.NOT. ASSOCIATED(rootNode)) THEN
+            PRINT *, "NO WORDS FOUND"
             RETURN
-        end if
+        END IF
 
         nodeIterator = rootNode
-        digits_count = len_trim(digits_str)
-        do i=1, digits_count
-            read (digits_str(i:i), *) digit
+        digits_count = LEN_TRIM(digits_str)
+        DO i=1, digits_count
+            READ (digits_str(i:i), *) digit
             nodeIterator = nodeIterator%next(digit)
             
-            if (.not. associated(nodeIterator)) then
-                print *, "NO WORDS FOUND"
+            IF (.NOT. ASSOCIATED(nodeIterator)) THEN
+                PRINT *, "NO WORDS FOUND"
                 RETURN
-            end if
-        end do
+            END IF
+        END DO
 
-        call PrintWordList(nodeIterator%word_list_root)
+        CALL PrintWordList(nodeIterator%word_list_root)
     END SUBROUTINE ShowWordsStartingWith
 
     SUBROUTINE InsertWordToDict(rootNode, word_str)
@@ -105,26 +105,26 @@ MODULE DictionaryModule
         INTEGER :: i, current_digit, out_digits_size
 
         out_digits = WordToDigits(word_str)
-        out_digits_size = size(out_digits)
+        out_digits_size = SIZE(out_digits)
                 
         iteratorNode => rootNode
-        do i=1, out_digits_size    
+        DO i=1, out_digits_size    
             current_digit = out_digits(i)
-            ! print *, current_digit ! DEBUG
+            ! PRINT *, current_digit ! DEBUG
 
-            if(.not. associated(iteratorNode%next)) then
-                allocate(iteratorNode%next(START_DIGIT:END_DIGIT))
-            end if
+            IF(.NOT. ASSOCIATED(iteratorNode%next)) THEN
+                ALLOCATE(iteratorNode%next(START_DIGIT:END_DIGIT))
+            END IF
 
             iteratorNode => iteratorNode%next(current_digit)
-        end do
+        END DO
 
-        if(.not. associated(iteratorNode%word_list_root)) then
-            allocate(iteratorNode%word_list_root)
-        end if
+        IF(.NOT. ASSOCIATED(iteratorNode%word_list_root)) THEN
+            ALLOCATE(iteratorNode%word_list_root)
+        END IF
 
         new_word = Word(word_str)
-        call InsertWordList(iteratorNode%word_list_root, new_word)
+        CALL InsertWordList(iteratorNode%word_list_root, new_word)
         
     END SUBROUTINE InsertWordToDict
 
@@ -135,10 +135,10 @@ MODULE DictionaryModule
         
         digit_count = len(word)
 
-        ! print *, "word = ", trim(word) ! DEBUG
-        ! print *, "len = ", digit_count ! DEBUG
+        ! PRINT *, "word = ", trim(word) ! DEBUG
+        ! PRINT *, "len = ", digit_count ! DEBUG
 
-        allocate(out_digits(1:digit_count))
+        ALLOCATE(out_digits(1:digit_count))
         DO i=1, digit_count
             out_digits(i) = CharToDigit(word(i:i))
         END DO
@@ -187,13 +187,13 @@ PROGRAM p1
     CHARACTER(LEN=20) :: current_word_str, prompt_str
     TYPE(DictNode), POINTER :: dict_root
 
-    allocate(dict_root)
+    ALLOCATE(dict_root)
 
     OPEN (UNIT = 1, FILE = "dict.txt", STATUS = "OLD", ACTION = "READ", POSITION="REWIND")
     DO i=1, DICT_SIZE
         READ (UNIT=1, FMT=*, IOSTAT=eof) current_word_str
         
-        call InsertWordToDict(dict_root, trim(current_word_str))
+        CALL InsertWordToDict(dict_root, trim(current_word_str))
 
         IF (eof < 0) THEN
             EXIT
@@ -201,12 +201,12 @@ PROGRAM p1
     END DO
 
 
-    do while(.true.)
-        read(*,'(A)') prompt_str
+    DO while(.true.)
+        READ(*,'(A)') prompt_str
         
-        print *, "Prompts: "
-        call ShowWordsStartingWith(dict_root, prompt_str)
-    end do
+        PRINT *, "Prompts: "
+        CALL ShowWordsStartingWith(dict_root, prompt_str)
+    END DO
 
     STOP
 END PROGRAM p1
