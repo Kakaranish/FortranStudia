@@ -76,6 +76,11 @@ MODULE DictionaryModule
         TYPE(DictNode), POINTER :: nodeIterator
         INTEGER :: digit, digits_count, i
 
+        IF (.NOT. ValidateDigitString(digits_str)) THEN
+            PRINT *, "Invalid digit string. Allowed 2-9 integers"
+            RETURN
+        END IF
+
         IF (.NOT. ASSOCIATED(rootNode)) THEN
             PRINT *, "NO WORDS FOUND"
             RETURN
@@ -173,6 +178,34 @@ MODULE DictionaryModule
 
         RETURN
     END FUNCTION CharToDigit
+
+    FUNCTION ValidateDigitString(digits_str) RESULT(is_valid)
+        CHARACTER(LEN=*), INTENT(IN) :: digits_str
+        CHARACTER :: digit_char
+        LOGICAL :: is_valid
+        INTEGER :: digits_count, i
+        LOGICAL :: is_valid_char
+
+        digits_count = LEN_TRIM(digits_str)
+        DO i=1, digits_count
+            digit_char = digits_str(i:i)
+            SELECT CASE (digit_char)
+                CASE ('2':'9')
+                    is_valid_char = .TRUE.
+                CASE DEFAULT
+                    is_valid_char = .FALSE. 
+            END SELECT
+
+            IF(.NOT. is_valid_char) THEN
+                is_valid = .FALSE.
+                RETURN
+            END IF
+        END DO
+
+        is_valid = .TRUE.
+        RETURN
+    END FUNCTION ValidateDigitString
+
 END MODULE DictionaryModule
 
 PROGRAM p1
